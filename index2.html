@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sound Puzzle</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #1a1a1a;
+      color: white;
+      padding: 20px;
+    }
+    #question {
+      margin: 20px 0;
+      color: #00bcd4;
+      min-height: 40px;
+    }
+    input {
+      padding: 10px;
+      margin: 10px;
+      width: 120px;
+      background: #333;
+      border: 2px solid #00bcd4;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔊 Sound Puzzle</h1>
+  <div id="score">Score: 0</div>
+  <button id="startButton" onclick="startGame()">Start</button>
+  <div id="question"></div>
+  <audio id="backgroundAudio" style="display:none;"></audio>
+  <audio id="questionAudio" onended="enableCheckButton()"></audio>
+  <input type="number" id="answer" min="2" max="6" disabled>
+  <button id="checkButton" onclick="checkAnswer()" disabled>Submit Your Answer</button>
+
+  <script>
+    const config = {
+      backgroundSounds: [
+        'audio/1.ogg',
+        'audio/2.ogg',
+        'audio/3.ogg',
+        'audio/4.ogg',
+        'audio/5.ogg',
+        'audio/6.ogg',
+        'audio/7.ogg',
+        'audio/8.ogg',
+        'audio/9.ogg',
+        'audio/10.ogg'
+      ],
+      questionAudios: [
+        { audio: 'audio/how_many.ogg', answer: 2 },
+        { audio: 'audio/how_much.ogg', answer: 2 },
+        { audio: 'audio/please_listen_carefully.ogg', answer: 3 },
+        { audio: 'audio/please_count_carefully.ogg', answer: 3 },
+        { audio: 'audio/pay_attention_to_listening.ogg', answer: 4 },
+        { audio: 'audio/how_many_in_total.ogg', answer: 4 },
+        { audio: 'audio/please_tell_me_how_many.ogg', answer: 5 },
+        { audio: 'audio/hear_sound_find_the_answer.ogg', answer: 5 },
+        { audio: 'audio/listen_carefully_and_count_attentively.ogg', answer: 5 },
+        { audio: 'audio/please_notice_each_sound_very_closely.ogg', answer: 6 }
+      ],
+      score: 0,
+      currentAnswer: null,
+      attempts: 0,
+      maxAttempts: 2,
+      targetScore: 100,
+      maxErrors: 3,
+      totalErrors: 0
+    };
+
+    const backgroundAudioPlayer = document.getElementById('backgroundAudio');
+    const questionAudioPlayer = document.getElementById('questionAudio');
+
+    function startGame() {
+      config.attempts = 0;
+      config.currentAnswer = null;
+      document.getElementById('answer').value = '';
+      document.getElementById('answer').disabled = true;
+      document.getElementById('checkButton').disabled = true;
+      const startButton = document.getElementById('startButton');
+      startButton.disabled = true;
+
+      // 重置背景音频
+      backgroundAudioPlayer.pause();
+      backgroundAudioPlayer.currentTime = 0;
+      backgroundAudioPlayer.src = '';
+      backgroundAudioPlayer.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      backgroundAudioPlayer.removeEventListener('error', handleBackgroundAudioError);
+
+      // 重置问题音频
+      questionAudioPlayer.pause();
+      questionAudioPlayer.currentTime = 0;
+      questionAudioPlayer.src = '';
+      questionAudioPlayer.removeEventListener('canplay', playQuestionAudioHandler);
+      questionAudioPlayer.removeEventListener('error', handleAudioError);
+
+      const randomBackgroundSound = config.backgroundSounds[Math.floor(Math.random() * config.backgroundSounds.length)];
+      console.log('尝试加载背景音频:', randomBackgroundSound);
+      backgroundAudioPlayer.src = randomBackgroundSound;
+
+      backgroundAudioPlayer.addEventListener('loadedmetadata', handleLoadedMetadata);
+      backgroundAudioPlayer.addEventListener('error', handleBackgroundAudioError);
+
+      backgroundAudioPlayer.play();
+    }
+
+    function handleLoadedMetadata() {
+      const duration = backgroundAudioPlayer.duration;
+      let randomPlayTime = Math.floor(Math.random() * 8) + 2;
+
+      if (duration <= randomPlayTime) {
+        backgroundAudioPlayer.onended = playQuestionAudio;
+      } else {
+        setTimeout(() => {
+          backgroundAudioPlayer.pause();
+          backgroundAudioPlayer.currentTime = 0;
+          playQuestionAudio();
+        }, randomPlayTime * 1000);
+      }
+    }
+
+    function enableCheckButton() {
+      document.getElementById('answer').disabled = false;
+      document.getElementById('checkButton').disabled = false;
+    }
+
+    function checkAnswer() {
+      const userAnswerInput = document.getElementById('answer');
+      const userAnswer = parseInt(userAnswerInput.value);
+      const startButton = document.getElementById('startButton');
+
+      if (isNaN(userAnswer)) {
+        alert('请输入有效的数字。');
+        return;
+      }
+
+      if (userAnswer === config.currentAnswer) {
+        config.score += 20;
+        document.getElementById('score').textContent = `Score: ${config.score}`;
+        if (config.score >= config.targetScore) {
+          alert(`恭喜！你达到 ${config.targetScore} 分，游戏胜利！`);
+          endGame();
+        } else {
+          alert('正确！');
+          startButton.disabled = false;
+          startGame();
+        }
+      } else {
+        config.attempts++;
+        if (config.attempts < config.maxAttempts) {
+          alert(`再试一次 (${config.attempts}/${config.maxAttempts})`);
+          userAnswerInput.value = '';
+        } else {
+          config.totalErrors++;
+          if (config.totalErrors >= config.maxErrors) {
+            alert(`游戏结束！你累计错误 ${config.maxErrors} 次，失败了。最终分数：${config.score}`);
+            endGame();
+          } else {
+            alert(`已用完所有尝试次数，错误次数：${config.totalErrors}/${config.maxErrors}，重新开始游戏`);
+            startButton.disabled = false;
+            startGame();
+          }
+        }
+      }
+    }
+
+    function playQuestionAudio() {
+      const randomQuestionAudio = config.questionAudios[Math.floor(Math.random() * config.questionAudios.length)];
+      console.log('尝试加载问题音频:', randomQuestionAudio.audio);
+
+      // 设置问题音频的 src
+      questionAudioPlayer.src = randomQuestionAudio.audio;
+      config.currentAnswer = randomQuestionAudio.answer;
+
+      // 移除之前的监听器，避免重复绑定
+      questionAudioPlayer.removeEventListener('canplay', playQuestionAudioHandler);
+      questionAudioPlayer.removeEventListener('error', handleAudioError);
+
+      // 添加监听器，等待音频可播放
+      questionAudioPlayer.addEventListener('canplay', playQuestionAudioHandler, { once: true });
+      questionAudioPlayer.addEventListener('error', handleAudioError);
+
+      // 手动触发加载
+      questionAudioPlayer.load();
+    }
+
+    function playQuestionAudioHandler() {
+      questionAudioPlayer.play().catch((e) => {
+        console.error('音频播放失败:', e);
+      });
+    }
+
+    function handleAudioError(e) {
+      console.error('问题音频加载错误:', questionAudioPlayer.src);
+      if (e.target.error) {
+        console.error('错误代码:', e.target.error.code);
+        console.error('错误消息:', e.target.error.message);
+      } else {
+        console.error('未知错误:', e);
+      }
+    }
+
+    function handleBackgroundAudioError(e) {
+      console.error('背景音频加载错误:', backgroundAudioPlayer.src, e);
+    }
+
+    function endGame() {
+      document.getElementById('answer').disabled = true;
+      document.getElementById('checkButton').disabled = true;
+      const startButton = document.getElementById('startButton');
+      startButton.textContent = '重新开始';
+      startButton.disabled = false;
+      startButton.onclick = resetGame;
+    }
+
+    function resetGame() {
+      config.score = 0;
+      config.totalErrors = 0;
+      config.attempts = 0;
+      config.currentAnswer = null;
+
+      document.getElementById('score').textContent = 'Score: 0';
+      document.getElementById('answer').value = '';
+      document.getElementById('answer').disabled = true;
+      document.getElementById('checkButton').disabled = true;
+
+      const startButton = document.getElementById('startButton');
+      startButton.textContent = 'Start';
+      startButton.disabled = false;
+      startButton.onclick = startGame;
+
+      backgroundAudioPlayer.pause();
+      backgroundAudioPlayer.currentTime = 0;
+      backgroundAudioPlayer.src = '';
+      questionAudioPlayer.pause();
+      questionAudioPlayer.currentTime = 0;
+      questionAudioPlayer.src = '';
+
+      startGame();
+    }
+  </script>
+</body>
+</html>
