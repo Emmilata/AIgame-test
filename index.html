@@ -27,7 +27,7 @@
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 40px; /* 固定尺寸 */
+      width: 40px;
       height: 40px;
       background: radial-gradient(circle, #ffffff 0%, #d3d3d3 20%, #1a1a1a 70%);
       border-radius: 50%;
@@ -207,7 +207,7 @@
     }
     #share-prompt {
       position: fixed;
-      top: 50%;
+      top: 50%; /* 小红书分享提示居中 */
       left: 50%;
       transform: translate(-50%, -50%);
       color: #ffffff;
@@ -229,7 +229,7 @@
     }
     #endgame-prompt {
       position: fixed;
-      top: 60%;
+      top: 60%; /* 感谢用户提示稍下移 */
       left: 50%;
       transform: translateX(-50%);
       color: #ffffff;
@@ -293,6 +293,10 @@
         padding: 6px 0;
         font-size: 12px;
       }
+      #tunnel {
+        max-width: 480px;
+        max-height: 480px;
+      }
       #notification {
         top: 30%;
         font-size: 9px;
@@ -352,6 +356,10 @@
         width: 160px;
         padding: 12px 0;
         font-size: 16px;
+      }
+      #tunnel {
+        max-width: 960px;
+        max-height: 960px;
       }
       #notification {
         top: 20%;
@@ -491,7 +499,7 @@
           "奇点已经到来，这个声音一直在萦绕着我",
           "你体验到顿悟时刻了吗",
           "有些人将这个游戏叫做黑魔法",
-          "啊，换成电子版玩啦？是不是有点怀念其他人偷偷告诉你答案的日子？",
+          "啊，换成电子版玩啦？是不是有点怀念他/她偷偷告诉你答案的日子？",
           "我把数字藏在了声音里——别告诉别人，其实这只是科学的小把戏！"
         ],
         tryAgain: '数错了吗？再试一下吧！',
@@ -645,6 +653,16 @@
 
     function updateTunnel() {
       const maxLevel = 5;
+      const sizes = window.innerWidth <= 768 ? [40, 80, 120, 240, 360, 480] : [40, 60, 120, 240, 480, 960];
+      const size = sizes[lightLevel];
+      
+      tunnelElement.style.width = `${size}px`;
+      tunnelElement.style.height = `${size}px`;
+      document.querySelectorAll('#tunnel .tunnel-line').forEach(line => {
+        const scale = size / 40;
+        line.style.transform = `rotate(${line.dataset.angle}deg) translateY(-50%) scale(${scale})`;
+      });
+
       if (lightLevel >= maxLevel) {
         document.body.style.backgroundColor = 'white';
         tunnelElement.style.display = 'none';
