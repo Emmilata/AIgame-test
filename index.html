@@ -22,7 +22,6 @@
       overflow-x: hidden;
       overflow-y: auto;
       position: relative;
-      transition: background-color 2s ease;
     }
     #tunnel {
       position: absolute;
@@ -37,7 +36,6 @@
       opacity: 1;
       pointer-events: none;
       z-index: -1;
-      transition: width 0.5s ease, height 0.5s ease;
     }
     #tunnel .tunnel-line {
       position: absolute;
@@ -47,7 +45,6 @@
       top: 50%;
       left: 0;
       transform-origin: center;
-      transition: transform 0.5s ease;
       filter: blur(1px);
     }
     #question {
@@ -57,7 +54,7 @@
     }
     .answer-container {
       display: none;
-      flex-direction: column;
+      flex-direction: row; /* 默认水平排列 */
       align-items: center;
       gap: 10px;
       margin-top: 20px;
@@ -68,9 +65,9 @@
       width: 90%;
     }
     .input-hint {
-      font-size: 14px;
+      font-size: 16px;
       color: #00bcd4;
-      margin-bottom: 5px;
+      margin-right: 10px;
     }
     .language-buttons {
       display: flex;
@@ -79,27 +76,28 @@
       margin-top: 20px;
     }
     input {
-      padding: 8px;
-      width: 100px;
+      padding: 12px;
+      width: 140px;
       background: rgba(255, 255, 255, 0.1);
       border: 2px solid #00bcd4;
       border-radius: 8px;
       color: white;
-      font-size: 14px;
+      font-size: 16px;
       transition: border-color 0.3s ease;
+      position: relative;
     }
     input:focus {
       border-color: #4caf50;
       outline: none;
     }
     button {
-      width: 120px;
-      padding: 8px 0;
+      width: 160px;
+      padding: 12px 0;
       background: linear-gradient(135deg, #00bcd4, #4caf50);
       border: none;
       border-radius: 8px;
       color: white;
-      font-size: 14px;
+      font-size: 16px;
       cursor: pointer;
       text-align: center;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -122,14 +120,14 @@
     }
     .notification {
       position: fixed;
-      top: 20%; /* 中间偏上 */
+      top: 20%;
       left: 50%;
       transform: translateX(-50%);
       background: rgba(0, 0, 0, 0.8);
-      padding: 10px 20px; /* 缩小内边距 */
+      padding: 10px 20px;
       border-radius: 12px;
       color: #fff;
-      font-size: 9px; /* 缩小 50%，原 18px */
+      font-size: 16px;
       box-shadow: 0 4px 20px rgba(0, 188, 212, 0.3);
       opacity: 0;
       transition: opacity 0.5s ease;
@@ -149,7 +147,7 @@
     #thought-text {
       position: absolute;
       color: #ffffff;
-      font-size: 9px; /* 缩小 50%，原 18px */
+      font-size: 16px;
       opacity: 0;
       text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
       text-rendering: optimizeLegibility;
@@ -157,7 +155,7 @@
       white-space: pre-wrap;
       text-align: center;
       background: rgba(0, 0, 0, 0.5);
-      padding: 5px 10px; /* 缩小内边距 */
+      padding: 10px 20px;
       border-radius: 20px;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
       will-change: transform, opacity;
@@ -211,7 +209,7 @@
       left: 50%;
       transform: translateX(-50%);
       color: #ffffff;
-      font-size: 9px; /* 缩小 50%，原 18px */
+      font-size: 16px;
       text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
       background: rgba(0, 0, 0, 0.5);
       padding: 10px 20px;
@@ -229,27 +227,96 @@
     }
     #tap-to-answer {
       display: none;
-      position: fixed;
-      top: 20%; /* 中间偏上 */
-      left: 50%;
-      transform: translateX(-50%);
-      width: 90%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 140px;
+      height: 38px;
       background: rgba(0, 0, 0, 0.5);
       color: white;
       text-align: center;
-      font-size: 10px; /* 缩小 50%，原 20px */
-      padding: 10px;
-      border-radius: 10px;
+      font-size: 16px;
+      line-height: 38px;
+      border-radius: 8px;
       z-index: 1000;
+      cursor: pointer;
     }
+
+    /* 手机端适配 */
     @media (max-width: 768px) {
-      #thought-text, #share-prompt, #endgame-prompt, #tap-to-answer {
-        font-size: 9px;
-        width: 80%;
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+      .answer-container {
+        flex-direction: column; /* 垂直排列 */
+        bottom: 5vh; /* 更靠近底部 */
+      }
+      .input-hint {
+        font-size: 12px;
+        margin-bottom: 5px;
+      }
+      input {
+        padding: 6px;
+        width: 100px;
+        font-size: 12px;
+      }
+      button {
+        width: 120px;
+        padding: 6px 0;
+        font-size: 12px;
+      }
+      #notification, #share-prompt, #endgame-prompt, #tap-to-answer {
+        font-size: 9px; /* 缩小 50% */
+        padding: 5px 10px; /* 缩小内边距 */
+        top: 10%; /* 中间偏上 */
+      }
+      #thought-text {
+        font-size: 8px;
+        padding: 5px 10px;
       }
       #tap-to-answer {
-        font-size: 10px;
+        width: 100px;
+        height: 30px;
+        line-height: 30px;
+      }
+      #game-instruction {
+        font-size: 14px;
+      }
+    }
+
+    /* 电脑端适配 */
+    @media (min-width: 769px) {
+      .answer-container {
+        flex-direction: row;
+        bottom: 10vh;
+      }
+      .input-hint {
+        font-size: 16px;
+        margin-right: 10px;
+      }
+      input {
+        padding: 12px;
+        width: 140px;
+        font-size: 16px;
+      }
+      button {
+        width: 160px;
+        padding: 12px 0;
+        font-size: 16px;
+      }
+      #notification, #share-prompt, #endgame-prompt, #tap-to-answer {
+        font-size: 16px;
+        padding: 10px 20px;
+        top: 20%;
+      }
+      #thought-text {
+        font-size: 16px;
+        padding: 10px 20px;
+      }
+      #tap-to-answer {
+        width: 140px;
+        height: 38px;
+        line-height: 38px;
+      }
+      #game-instruction {
+        font-size: 16px;
       }
     }
   </style>
@@ -275,7 +342,10 @@
     <div id="game-instruction">听声音猜数目，破解 5 道谜题解开真相吧！</div>
     <div class="answer-container">
       <span class="input-hint" id="input-hint"></span>
-      <input type="number" id="answer" min="2" max="6" disabled>
+      <div style="position: relative;">
+        <input type="number" id="answer" min="2" max="6" disabled>
+        <div id="tap-to-answer">点击以输入答案</div>
+      </div>
       <button id="checkButton" onclick="checkAnswer()">提交答案</button>
       <button id="nextQuestionButton">下一题</button>
     </div>
@@ -289,7 +359,6 @@
   <div id="notification" class="notification"></div>
   <div id="share-prompt"></div>
   <div id="endgame-prompt"></div>
-  <div id="tap-to-answer">点击以输入答案</div>
 
   <script>
     let currentLanguage = 'en';
@@ -380,15 +449,15 @@
         { audio: 'audio/please_notice_each_sound_very_closely.ogg', answer: 6 }
       ],
       questionAudiosZh: [
-        { audio: 'audio/ji_ge.ogg', answer: 2 },                           // 几个
-        { audio: 'audio/duo_shao.ogg', answer: 2 },                        // 多少
-        { audio: 'audio/duo_shao_ge.ogg', answer: 3 },                    // 多少个
-        { audio: 'audio/qing_zi_xi_ting.ogg', answer: 4 },                // 请仔细听
-        { audio: 'audio/yi_gong_duo_shao.ogg', answer: 4 },              // 一共多少
-        { audio: 'audio/zhu_yi_ting_sheng_yin.ogg', answer: 5 },          // 注意听声音
-        { audio: 'audio/zong_gong_you_duo_shao.ogg', answer: 5 },         // 总共有多少
-        { audio: 'audio/ting_sheng_yin_zhao_da_an.ogg', answer: 6 },      // 听声音找答案
-        { audio: 'audio/zi_xi_ting_ren_zhen_shu.ogg', answer: 6 }         // 仔细听认真数
+        { audio: 'audio/ji_ge.ogg', answer: 2 },
+        { audio: 'audio/duo_shao.ogg', answer: 2 },
+        { audio: 'audio/duo_shao_ge.ogg', answer: 3 },
+        { audio: 'audio/qing_zi_xi_ting.ogg', answer: 4 },
+        { audio: 'audio/yi_gong_duo_shao.ogg', answer: 4 },
+        { audio: 'audio/zhu_yi_ting_sheng_yin.ogg', answer: 5 },
+        { audio: 'audio/zong_gong_you_duo_shao.ogg', answer: 5 },
+        { audio: 'audio/ting_sheng_yin_zhao_da_an.ogg', answer: 6 },
+        { audio: 'audio/zi_xi_ting_ren_zhen_shu.ogg', answer: 6 }
       ],
       score: 0,
       currentAnswer: null,
@@ -500,6 +569,7 @@
       checkButton.textContent = lang.submit;
       nextButton.textContent = lang.next;
       document.getElementById('input-hint').textContent = lang.inputHint;
+      document.getElementById('tap-to-answer').textContent = currentLanguage === 'en' ? "Tap to answer" : "点击以输入答案";
       setupShareLinks();
     }
 
@@ -579,6 +649,7 @@
     }
 
     document.getElementById('tap-to-answer').addEventListener('click', () => {
+      console.log('Tap-to-answer clicked');
       document.getElementById('tap-to-answer').style.display = 'none';
       document.getElementById('answer').disabled = false;
       document.getElementById('answer').focus();
