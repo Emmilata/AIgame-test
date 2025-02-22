@@ -120,7 +120,7 @@
     }
     .notification {
       position: fixed;
-      top: 20%;
+      top: 20%; /* 答对/答错提示位置 */
       left: 50%;
       transform: translateX(-50%);
       background: rgba(0, 0, 0, 0.8);
@@ -145,7 +145,10 @@
       font-size: 16px;
     }
     #thought-text {
-      position: absolute;
+      position: fixed; /* 改为 fixed，避免与通知重叠 */
+      top: 40%; /* 逗趣文案位置，低于通知 */
+      left: 50%;
+      transform: translateX(-50%);
       color: #ffffff;
       font-size: 16px;
       opacity: 0;
@@ -159,7 +162,6 @@
       border-radius: 20px;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
       will-change: transform, opacity;
-      transform: translateZ(0);
     }
     .fade-in-out {
       animation: fadeInOut 6s cubic-bezier(0.4, 0, 0.2, 1), float 6s ease-in-out infinite;
@@ -205,9 +207,9 @@
     }
     #share-prompt, #endgame-prompt {
       position: fixed;
-      top: 20%;
+      top: 50%; /* 感谢与分享提示居中 */
       left: 50%;
-      transform: translateX(-50%);
+      transform: translate(-50%, -50%); /* 完全居中 */
       color: #ffffff;
       font-size: 16px;
       text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
@@ -246,7 +248,7 @@
     @media (max-width: 768px) {
       .answer-container {
         flex-direction: column;
-        bottom: 20vh; /* 更靠中间 */
+        bottom: 20vh; /* 更靠中部 */
       }
       .input-hint {
         font-size: 12px;
@@ -262,19 +264,27 @@
         padding: 6px 0;
         font-size: 12px;
       }
-      #notification, #share-prompt, #endgame-prompt, #tap-to-answer {
+      #notification {
+        top: 30%; /* 答对/答错提示 */
         font-size: 9px;
         padding: 5px 10px;
-        top: 30%; /* 更靠中部 */
       }
       #thought-text {
+        top: 50%; /* 逗趣文案，低于通知 */
         font-size: 8px;
+        padding: 5px 10px;
+      }
+      #share-prompt, #endgame-prompt {
+        top: 50%; /* 感谢与分享提示居中 */
+        transform: translate(-50%, -50%);
+        font-size: 9px;
         padding: 5px 10px;
       }
       #tap-to-answer {
         width: 100px;
         height: 30px;
         line-height: 30px;
+        font-size: 9px;
       }
       #game-instruction {
         font-size: 14px;
@@ -287,7 +297,8 @@
         flex-direction: row;
         bottom: 10vh;
         left: 50%;
-        transform: translateX(-50%); /* 确保居中 */
+        transform: translateX(-50%);
+        width: auto; /* 避免过宽 */
       }
       .input-hint {
         font-size: 16px;
@@ -303,12 +314,19 @@
         padding: 12px 0;
         font-size: 16px;
       }
-      #notification, #share-prompt, #endgame-prompt, #tap-to-answer {
+      #notification {
+        top: 20%; /* 答对/答错提示 */
         font-size: 16px;
         padding: 10px 20px;
-        top: 20%;
       }
       #thought-text {
+        top: 40%; /* 逗趣文案，低于通知 */
+        font-size: 16px;
+        padding: 10px 20px;
+      }
+      #share-prompt, #endgame-prompt {
+        top: 50%; /* 感谢与分享提示居中 */
+        transform: translate(-50%, -50%);
         font-size: 16px;
         padding: 10px 20px;
       }
@@ -316,6 +334,7 @@
         width: 140px;
         height: 38px;
         line-height: 38px;
+        font-size: 16px;
       }
       #game-instruction {
         font-size: 16px;
@@ -524,12 +543,8 @@
         thoughtText.textContent = randomText;
       }
 
-      const topRange = [10, 30];
-      const leftRange = Math.random() < 0.5 ? [10, 20] : [40, 60];
-      const randomTop = Math.random() * (topRange[1] - topRange[0]) + topRange[0];
-      const randomLeft = Math.random() * (leftRange[1] - leftRange[0]) + leftRange[0];
-      thoughtText.style.top = `${randomTop}%`;
-      thoughtText.style.left = `${randomLeft}%`;
+      thoughtText.style.top = '40%'; // 固定位置，避免随机重叠
+      thoughtText.style.left = '50%';
       thoughtText.style.transform = 'translateX(-50%)';
 
       thoughtText.classList.remove('fade-in-out');
