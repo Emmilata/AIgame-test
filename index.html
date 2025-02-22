@@ -15,11 +15,12 @@
       text-align: center;
       background-color: #1a1a1a;
       color: white;
-      padding: 20px;
+      padding: 10px;
       margin: 0;
       height: 100vh;
       width: 100vw;
-      overflow: hidden;
+      overflow-x: hidden;
+      overflow-y: auto;
       position: relative;
       transition: background-color 2s ease;
     }
@@ -56,19 +57,20 @@
     }
     .answer-container {
       display: none;
-      justify-content: center;
+      flex-direction: column; /* 垂直排列 */
       align-items: center;
       gap: 10px;
       margin-top: 20px;
       position: absolute;
-      bottom: calc(10vh + 100px);
+      bottom: 10vh; /* 调整位置 */
       left: 50%;
       transform: translateX(-50%);
+      width: 90%; /* 适配小屏幕 */
     }
     .input-hint {
-      font-size: 16px;
+      font-size: 14px;
       color: #00bcd4;
-      margin-right: 10px;
+      margin-bottom: 5px;
     }
     .language-buttons {
       display: flex;
@@ -77,13 +79,13 @@
       margin-top: 20px;
     }
     input {
-      padding: 12px;
-      width: 140px;
+      padding: 8px;
+      width: 100px; /* 缩小宽度 */
       background: rgba(255, 255, 255, 0.1);
       border: 2px solid #00bcd4;
       border-radius: 8px;
       color: white;
-      font-size: 16px;
+      font-size: 14px;
       transition: border-color 0.3s ease;
     }
     input:focus {
@@ -91,13 +93,13 @@
       outline: none;
     }
     button {
-      width: 160px;
-      padding: 12px 0;
+      width: 120px; /* 缩小宽度 */
+      padding: 8px 0;
       background: linear-gradient(135deg, #00bcd4, #4caf50);
       border: none;
       border-radius: 8px;
       color: white;
-      font-size: 16px;
+      font-size: 14px;
       cursor: pointer;
       text-align: center;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -120,14 +122,14 @@
     }
     .notification {
       position: fixed;
-      top: calc(50% + 80px);
+      top: calc(50% + 60px);
       left: 50%;
       transform: translateX(-50%);
       background: rgba(0, 0, 0, 0.8);
-      padding: 20px 40px;
+      padding: 15px 30px;
       border-radius: 12px;
       color: #fff;
-      font-size: 18px;
+      font-size: 16px;
       box-shadow: 0 4px 20px rgba(0, 188, 212, 0.3);
       opacity: 0;
       transition: opacity 0.5s ease;
@@ -142,12 +144,12 @@
       left: 50%;
       transform: translateX(-50%);
       color: #00bcd4;
-      font-size: 18px;
+      font-size: 16px;
     }
     #thought-text {
       position: absolute;
       color: #ffffff;
-      font-size: 20px;
+      font-size: 18px;
       opacity: 0;
       text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
       text-rendering: optimizeLegibility;
@@ -176,15 +178,15 @@
     }
     #share-buttons {
       position: fixed;
-      bottom: 20px;
-      right: 20px;
+      bottom: 10px;
+      right: 10px;
       z-index: 100;
       display: flex;
-      gap: 15px;
+      gap: 10px;
     }
     .share-button {
-      width: 40px;
-      height: 40px;
+      width: 35px;
+      height: 35px;
       background: rgba(255, 255, 255, 0.1);
       border-radius: 50%;
       display: flex;
@@ -200,8 +202,8 @@
       transform: scale(1.1);
     }
     .share-button img {
-      width: 24px;
-      height: 24px;
+      width: 20px;
+      height: 20px;
     }
     #share-prompt, #endgame-prompt {
       position: fixed;
@@ -209,10 +211,10 @@
       left: 50%;
       transform: translateX(-50%);
       color: #ffffff;
-      font-size: 20px;
+      font-size: 18px;
       text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
       background: rgba(0, 0, 0, 0.5);
-      padding: 20px 40px;
+      padding: 15px 30px;
       border-radius: 20px;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
       z-index: 200;
@@ -235,34 +237,18 @@
       background: rgba(0, 0, 0, 0.5);
       color: white;
       text-align: center;
-      font-size: 24px;
+      font-size: 20px;
       line-height: 100vh;
       z-index: 1000;
     }
     @media (max-width: 768px) {
       #thought-text, #share-prompt, #endgame-prompt, #tap-to-answer {
-        font-size: 16px;
+        font-size: 14px;
         width: 80%;
         text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
       }
-      #share-buttons {
-        bottom: 10px;
-        right: 10px;
-        gap: 10px;
-      }
-      .share-button {
-        width: 35px;
-        height: 35px;
-      }
-      .share-button img {
-        width: 20px;
-        height: 20px;
-      }
-      .answer-container {
-        bottom: calc(10vh + 80px);
-      }
-      .input-hint {
-        font-size: 14px;
+      #tap-to-answer {
+        font-size: 16px;
       }
     }
   </style>
@@ -568,7 +554,7 @@
 
       backgroundAudioPlayer.addEventListener('loadedmetadata', handleLoadedMetadata);
       backgroundAudioPlayer.addEventListener('error', handleBackgroundAudioError);
-      backgroundAudioPlayer.play();
+      backgroundAudioPlayer.play().catch((e) => console.error('背景音频播放失败:', e));
 
       triggerThoughtText();
     }
@@ -663,13 +649,11 @@
       questionAudioPlayer.addEventListener('error', handleAudioError);
       questionAudioPlayer.addEventListener('ended', enableCheckButton, { once: true });
 
-      questionAudioPlayer.load();
+      questionAudioPlayer.play().catch((e) => console.error('问题音频播放失败:', e));
     }
 
     function playQuestionAudioHandler() {
-      questionAudioPlayer.play().catch((e) => {
-        console.error('音频播放失败:', e);
-      });
+      questionAudioPlayer.play().catch((e) => console.error('音频播放失败:', e));
     }
 
     function handleAudioError(e) {
