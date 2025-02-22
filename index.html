@@ -54,7 +54,7 @@
     }
     .answer-container {
       display: none;
-      flex-direction: row; /* 默认水平排列 */
+      flex-direction: row;
       align-items: center;
       gap: 10px;
       margin-top: 20px;
@@ -245,8 +245,8 @@
     /* 手机端适配 */
     @media (max-width: 768px) {
       .answer-container {
-        flex-direction: column; /* 垂直排列 */
-        bottom: 5vh; /* 更靠近底部 */
+        flex-direction: column;
+        bottom: 20vh; /* 更靠中间 */
       }
       .input-hint {
         font-size: 12px;
@@ -263,9 +263,9 @@
         font-size: 12px;
       }
       #notification, #share-prompt, #endgame-prompt, #tap-to-answer {
-        font-size: 9px; /* 缩小 50% */
-        padding: 5px 10px; /* 缩小内边距 */
-        top: 10%; /* 中间偏上 */
+        font-size: 9px;
+        padding: 5px 10px;
+        top: 30%; /* 更靠中部 */
       }
       #thought-text {
         font-size: 8px;
@@ -286,6 +286,8 @@
       .answer-container {
         flex-direction: row;
         bottom: 10vh;
+        left: 50%;
+        transform: translateX(-50%); /* 确保居中 */
       }
       .input-hint {
         font-size: 16px;
