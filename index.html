@@ -3,55 +3,369 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sound Puzzle</title>
+  <title>听声猜数 / Listen Sound Guess Number</title>
+  <!-- 引入 Roboto 字体 -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Roboto', Arial, sans-serif;
+    }
     body { 
-      font-family: Arial, sans-serif;
       text-align: center;
-      background: #1a1a1a;
+      background-color: #1a1a1a;
       color: white;
       padding: 20px;
+      margin: 0;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      position: relative;
+      transition: background-color 2s ease;
+    }
+    #tunnel {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 40px;
+      height: 40px;
+      background: radial-gradient(circle, #ffffff 0%, #d3d3d3 20%, #1a1a1a 70%);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      perspective: 500px;
+      opacity: 1;
+      pointer-events: none;
+      z-index: -1;
+      transition: width 0.5s ease, height 0.5s ease;
+    }
+    #tunnel .tunnel-line {
+      position: absolute;
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(255,255,255,0.5), transparent);
+      top: 50%;
+      left: 0;
+      transform-origin: center;
+      transition: transform 0.5s ease;
+      filter: blur(1px);
     }
     #question {
       margin: 20px 0;
       color: #00bcd4;
       min-height: 40px;
     }
+    .answer-container {
+      display: none;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-top: 20px;
+      position: absolute;
+      bottom: calc(10vh + 100px);
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .input-hint {
+      font-size: 16px;
+      color: #00bcd4;
+      margin-right: 10px;
+    }
+    .language-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 20px;
+    }
     input {
-      padding: 10px;
-      margin: 10px;
-      width: 120px;
-      background: #333;
+      padding: 12px;
+      width: 140px;
+      background: rgba(255, 255, 255, 0.1);
       border: 2px solid #00bcd4;
+      border-radius: 8px;
       color: white;
+      font-size: 16px;
+      transition: border-color 0.3s ease;
+    }
+    input:focus {
+      border-color: #4caf50;
+      outline: none;
+    }
+    button {
+      width: 160px;
+      padding: 12px 0;
+      background: linear-gradient(135deg, #00bcd4, #4caf50);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      text-align: center;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(0, 188, 212, 0.3);
+    }
+    #startButton {
+      margin-top: 20px;
+    }
+    #nextQuestionButton {
+      display: none;
+    }
+    #checkButton {
+      display: none;
+    }
+    #languageSelection {
+      margin: 20px;
+    }
+    .notification {
+      position: fixed;
+      top: calc(50% + 80px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      padding: 20px 40px;
+      border-radius: 12px;
+      color: #fff;
+      font-size: 18px;
+      box-shadow: 0 4px 20px rgba(0, 188, 212, 0.3);
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      z-index: 10;
+    }
+    .notification.show {
+      opacity: 1;
+    }
+    #game-instruction {
+      position: absolute;
+      top: calc(50% + 40px);
+      left: 50%;
+      transform: translateX(-50%);
+      color: #00bcd4;
+      font-size: 18px;
+    }
+    #thought-text {
+      position: absolute;
+      color: #ffffff;
+      font-size: 20px;
+      opacity: 0;
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+      text-rendering: optimizeLegibility;
+      z-index: 100;
+      white-space: pre-wrap;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 10px 20px;
+      border-radius: 20px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+      will-change: transform, opacity;
+      transform: translateZ(0);
+    }
+    .fade-in-out {
+      animation: fadeInOut 6s cubic-bezier(0.4, 0, 0.2, 1), float 6s ease-in-out infinite;
+    }
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: scale(0.9); }
+      20% { opacity: 1; transform: scale(1); }
+      80% { opacity: 1; transform: scale(1); }
+      100% { opacity: 0; transform: scale(0.9); }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-10px) scale(1); }
+    }
+    #share-buttons {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 100;
+      display: flex;
+      gap: 15px;
+    }
+    .share-button {
+      width: 40px;
+      height: 40px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      transition: background 0.3s ease, transform 0.3s ease;
+      border: none;
+      cursor: pointer;
+    }
+    .share-button:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(1.1);
+    }
+    .share-button img {
+      width: 24px;
+      height: 24px;
+    }
+    #share-prompt, #endgame-prompt {
+      position: fixed;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #ffffff;
+      font-size: 20px;
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+      background: rgba(0, 0, 0, 0.5);
+      padding: 20px 40px;
+      border-radius: 20px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+      z-index: 200;
+      opacity: 0;
+      text-align: center;
+      max-width: 80%;
+      pointer-events: none;
+    }
+    #share-prompt.show, #endgame-prompt.show {
+      opacity: 1;
+      animation: fadeInOut 3s cubic-bezier(0.4, 0, 0.2, 1), float 3s ease-in-out infinite;
+    }
+    @media (max-width: 768px) {
+      #thought-text, #share-prompt, #endgame-prompt {
+        font-size: 16px;
+        width: 80%;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+      }
+      #share-buttons {
+        bottom: 10px;
+        right: 10px;
+        gap: 10px;
+      }
+      .share-button {
+        width: 35px;
+        height: 35px;
+      }
+      .share-button img {
+        width: 20px;
+        height: 20px;
+      }
+      .answer-container {
+        bottom: calc(10vh + 80px);
+      }
+      .input-hint {
+        font-size: 14px;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>🔊 Sound Puzzle</h1>
-  <div id="score">Score: 0</div>
-  <button id="startButton" onclick="startGame()">Start</button>
-  <div id="question"></div>
-  <audio id="backgroundAudio" style="display:none;"></audio>
-  <audio id="questionAudio" onended="enableCheckButton()"></audio>
-  <input type="number" id="answer" min="2" max="6" disabled>
-  <button id="checkButton" onclick="checkAnswer()" disabled>Submit Your Answer</button>
+  <div id="tunnel"></div>
+
+  <div id="languageSelection">
+    <h1>听声猜数 / Listen Sound Guess Number</h1>
+    <h2>选择语言 / Choose Language</h2>
+    <div class="language-buttons">
+      <button onclick="selectLanguage('zh')">中文</button>
+      <button onclick="selectLanguage('en')">English</button>
+    </div>
+  </div>
+
+  <div id="game" style="display:none;">
+    <h1 id="title">🔊 听声猜数 / Listen Sound Guess Number</h1>
+    <div id="thought-text"></div>
+    <div id="question"></div>
+    <audio id="backgroundAudio" style="display:none;"></audio>
+    <audio id="questionAudio" onended="enableCheckButton()"></audio>
+    <div id="game-instruction">听声音猜数目，破解 5 道谜题解开真相吧！</div>
+    <div class="answer-container">
+      <span class="input-hint" id="input-hint"></span>
+      <input type="number" id="answer" min="2" max="6" disabled>
+      <button id="checkButton" onclick="checkAnswer()">提交答案</button>
+      <button id="nextQuestionButton">下一题</button>
+    </div>
+    <button id="startButton" onclick="startGame()">开始</button>
+    <div id="share-buttons">
+      <a href="#" id="share-x" class="share-button" target="_blank"><img src="audio/x-logo.png" alt="X"></a>
+      <button id="share-xhs" class="share-button"><img src="audio/xiaohongshu-logo.png" alt="Xiaohongshu"></button>
+    </div>
+  </div>
+
+  <div id="notification" class="notification"></div>
+  <div id="share-prompt"></div>
+  <div id="endgame-prompt"></div>
 
   <script>
+    let currentLanguage = 'en';
+    let lightLevel = 0;
+
+    const languageConfig = {
+      en: {
+        title: '🔊 Listen Sound Guess Number',
+        instruction: 'Listen to the sound and guess the number, solve 5 puzzles to uncover the truth!',
+        start: 'Start',
+        submit: 'Submit Your Answer',
+        invalidInput: 'Please enter a valid number.',
+        correctMessages: [
+          "There’s a number in the sound—can you hear it?",
+          "You’re starting to catch the clues in the sound!",
+          "Listen closely, the pattern of numbers is emerging!",
+          "You’re ready to unlock the truth in the sound!",
+          "Congratulations! You’ve unlocked all the sound’s secrets!"
+        ],
+        thoughtMessages: [
+          "You might’ve played this game before, huh?",
+          "Do you still remember how it felt back then?",
+          "What can I help you with today?",
+          "The singularity’s here, and this sound keeps haunting me!",
+          "Have you felt that ‘aha’ moment yet?",
+          "Some call this game dark magic, you know.",
+          "Oh, switched to the digital version? Miss me whispering the answers yet?",
+          "I hid the numbers in the sound—don’t tell anyone, it’s just a science trick!"
+        ],
+        tryAgain: 'Missed it? Give it another shot!',
+        gameOver: 'Game Over! You have failed',
+        restart: 'Restart',
+        errors: 'errors',
+        attempts: 'attempts left',
+        next: 'Next One',
+        continue: 'Keep listening to the next one',
+        inputHint: 'Answer range: 2-6'
+      },
+      zh: {
+        title: '🔊 听声猜数',
+        instruction: '听声音猜数目，破解 5 道谜题解开真相吧！',
+        start: '开始',
+        submit: '提交答案',
+        invalidInput: '请输入有效的数字。',
+        correctMessages: [
+          "声音中藏着数目，你能听出吗？",
+          "你开始捕捉到声音的线索了！",
+          "再仔细听，数字的规律浮现了！",
+          "你已经准备好解开声音的真相了！",
+          "恭喜！你解开了所有声音的秘密！"
+        ],
+        thoughtMessages: [
+          "你可能已经玩过这个游戏",
+          "还记得当时的情景吗",
+          "我今天能帮到你什么？",
+          "奇点已经到来，这个声音一直在萦绕着我",
+          "你体验到顿悟时刻了吗",
+          "有些人将这个游戏叫做黑魔法",
+          "啊，换成电子版玩啦？是不是有点怀念我偷偷告诉你答案的日子？",
+          "我把数字藏在了声音里——别告诉别人，其实这只是科学的小把戏！"
+        ],
+        tryAgain: '数错了吗？再试一下吧！',
+        gameOver: '游戏结束！你累计错误',
+        restart: '重新开始',
+        errors: '次，失败了。',
+        attempts: '次尝试机会',
+        next: '下一题',
+        continue: '继续听下一题',
+        inputHint: '答案范围：2-6'
+      }
+    };
+
     const config = {
       backgroundSounds: [
-        'audio/1.ogg',
-        'audio/2.ogg',
-        'audio/3.ogg',
-        'audio/4.ogg',
-        'audio/5.ogg',
-        'audio/6.ogg',
-        'audio/7.ogg',
-        'audio/8.ogg',
-        'audio/9.ogg',
-        'audio/10.ogg'
+        'audio/1.ogg', 'audio/2.ogg', 'audio/3.ogg', 'audio/4.ogg', 'audio/5.ogg',
+        'audio/6.ogg', 'audio/7.ogg', 'audio/8.ogg', 'audio/9.ogg', 'audio/10.ogg'
       ],
-      questionAudios: [
+      questionAudiosEn: [
         { audio: 'audio/how_many.ogg', answer: 2 },
         { audio: 'audio/how_much.ogg', answer: 2 },
         { audio: 'audio/please_listen_carefully.ogg', answer: 3 },
@@ -63,35 +377,168 @@
         { audio: 'audio/listen_carefully_and_count_attentively.ogg', answer: 5 },
         { audio: 'audio/please_notice_each_sound_very_closely.ogg', answer: 6 }
       ],
+      questionAudiosZh: [
+        { audio: 'audio/ji_ge.ogg', answer: 2 },                           // 几个
+        { audio: 'audio/duo_shao.ogg', answer: 2 },                        // 多少
+        { audio: 'audio/duo_shao_ge.ogg', answer: 3 },                    // 多少个
+        { audio: 'audio/qing_zi_xi_ting.ogg', answer: 4 },                // 请仔细听
+        { audio: 'audio/yi_gong_duo_shao.ogg', answer: 4 },              // 一共多少
+        { audio: 'audio/zhu_yi_ting_sheng_yin.ogg', answer: 5 },          // 注意听声音
+        { audio: 'audio/zong_gong_you_duo_shao.ogg', answer: 5 },         // 总共有多少
+        { audio: 'audio/ting_sheng_yin_zhao_da_an.ogg', answer: 6 },      // 听声音找答案
+        { audio: 'audio/zi_xi_ting_ren_zhen_shu.ogg', answer: 6 }         // 仔细听认真数
+      ],
       score: 0,
       currentAnswer: null,
       attempts: 0,
       maxAttempts: 2,
-      targetScore: 100,
+      targetScore: 5,
       maxErrors: 3,
       totalErrors: 0
     };
 
     const backgroundAudioPlayer = document.getElementById('backgroundAudio');
     const questionAudioPlayer = document.getElementById('questionAudio');
+    const tunnelElement = document.getElementById('tunnel');
+    const startButton = document.getElementById('startButton');
+    const nextButton = document.getElementById('nextQuestionButton');
+    const checkButton = document.getElementById('checkButton');
+    const notification = document.getElementById('notification');
+    const instruction = document.getElementById('game-instruction');
+    const thoughtText = document.getElementById('thought-text');
+    const sharePrompt = document.getElementById('share-prompt');
+    const endgamePrompt = document.getElementById('endgame-prompt');
+
+    function showSharePrompt(message) {
+      sharePrompt.textContent = message;
+      sharePrompt.classList.add('show');
+      setTimeout(() => {
+        sharePrompt.classList.remove('show');
+      }, 8000);
+    }
+
+    function showEndgamePrompt(message) {
+      endgamePrompt.textContent = message;
+      endgamePrompt.classList.add('show');
+      // 移除 setTimeout，使提示一直显示
+    }
+
+    function initTunnelLines() {
+      const angles = [0, 22.5, 45, 67.5, 90, 112.5, 135, 157.5, 180, 202.5, 225, 247.5, 270, 292.5, 315, 337.5];
+      angles.forEach(angle => {
+        const line = document.createElement('div');
+        line.className = 'tunnel-line';
+        line.dataset.angle = angle;
+        line.style.transform = `rotate(${angle}deg) translateY(-50%) scale(1)`;
+        tunnelElement.appendChild(line);
+      });
+    }
+    initTunnelLines();
+
+    function showNotification(message, duration = 8000) {
+      notification.textContent = message;
+      notification.classList.add('show');
+      setTimeout(() => {
+        notification.classList.remove('show');
+      }, duration); // 默认 8 秒，可自定义
+    }
+
+    function triggerThoughtText() {
+      const randomText = languageConfig[currentLanguage].thoughtMessages[Math.floor(Math.random() * languageConfig[currentLanguage].thoughtMessages.length)];
+      
+      if (window.innerWidth < 768) {
+        thoughtText.textContent = randomText.replace(/(.{20})/g, '$1\n');
+      } else {
+        thoughtText.textContent = randomText;
+      }
+
+      const topRange = [10, 30];
+      const leftRange = Math.random() < 0.5 ? [10, 20] : [40, 60];
+      const randomTop = Math.random() * (topRange[1] - topRange[0]) + topRange[0];
+      const randomLeft = Math.random() * (leftRange[1] - leftRange[0]) + leftRange[0];
+      thoughtText.style.top = `${randomTop}%`;
+      thoughtText.style.left = `${randomLeft}%`;
+      thoughtText.style.transform = 'translateX(-50%)';
+
+      thoughtText.classList.remove('fade-in-out');
+      void thoughtText.offsetWidth;
+      thoughtText.classList.add('fade-in-out');
+    }
+
+    function setupShareLinks() {
+      const gameUrl = window.location.href;
+      const shareText = currentLanguage === 'en' 
+        ? "How can I uncover the truth of this game?"
+        : "如何找到这个游戏的真相？";
+      
+      document.getElementById('share-x').href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(gameUrl)}`;
+      
+      document.getElementById('share-xhs').onclick = () => {
+        navigator.clipboard.writeText(`${shareText} ${gameUrl}`).then(() => {
+          showSharePrompt(currentLanguage === 'en' 
+            ? "Hey, copied it! Love this game or need a friend’s help? Share it on Xiaohongshu!"
+            : "嘿，复制好了！觉得游戏好玩或想求助朋友？快分享到小红书吧！");
+        });
+      };
+    }
+
+    function selectLanguage(lang) {
+      currentLanguage = lang;
+      document.getElementById('languageSelection').style.display = 'none';
+      document.getElementById('game').style.display = 'block';
+      updateLanguage();
+      instruction.textContent = languageConfig[lang].instruction;
+      instruction.style.display = 'block';
+      setupShareLinks();
+    }
+
+    function updateLanguage() {
+      const lang = languageConfig[currentLanguage];
+      document.getElementById('title').textContent = lang.title;
+      startButton.textContent = lang.start;
+      checkButton.textContent = lang.submit;
+      nextButton.textContent = lang.next;
+      document.getElementById('input-hint').textContent = lang.inputHint;
+      setupShareLinks();
+    }
+
+    function updateTunnel() {
+      const maxLevel = 5;
+      const sizes = [40, 60, 120, 240, 480, 960];
+      const size = sizes[lightLevel];
+      
+      tunnelElement.style.width = `${size}px`;
+      tunnelElement.style.height = `${size}px`;
+      document.querySelectorAll('#tunnel .tunnel-line').forEach(line => {
+        const scale = size / 40;
+        line.style.transform = `rotate(${line.dataset.angle}deg) translateY(-50%) scale(${scale})`;
+      });
+
+      if (lightLevel >= maxLevel) {
+        document.body.style.backgroundColor = 'white';
+        tunnelElement.style.display = 'none';
+      }
+    }
 
     function startGame() {
       config.attempts = 0;
       config.currentAnswer = null;
       document.getElementById('answer').value = '';
       document.getElementById('answer').disabled = true;
-      document.getElementById('checkButton').disabled = true;
-      const startButton = document.getElementById('startButton');
-      startButton.disabled = true;
+      checkButton.style.display = 'block';
+      checkButton.disabled = true;
+      startButton.style.display = 'none';
+      nextButton.style.display = 'block';
+      nextButton.disabled = true;
+      instruction.style.display = 'none';
+      document.querySelector('.answer-container').style.display = 'flex';
 
-      // 重置背景音频
       backgroundAudioPlayer.pause();
       backgroundAudioPlayer.currentTime = 0;
       backgroundAudioPlayer.src = '';
       backgroundAudioPlayer.removeEventListener('loadedmetadata', handleLoadedMetadata);
       backgroundAudioPlayer.removeEventListener('error', handleBackgroundAudioError);
 
-      // 重置问题音频
       questionAudioPlayer.pause();
       questionAudioPlayer.currentTime = 0;
       questionAudioPlayer.src = '';
@@ -104,8 +551,9 @@
 
       backgroundAudioPlayer.addEventListener('loadedmetadata', handleLoadedMetadata);
       backgroundAudioPlayer.addEventListener('error', handleBackgroundAudioError);
-
       backgroundAudioPlayer.play();
+
+      triggerThoughtText();
     }
 
     function handleLoadedMetadata() {
@@ -125,66 +573,71 @@
 
     function enableCheckButton() {
       document.getElementById('answer').disabled = false;
-      document.getElementById('checkButton').disabled = false;
+      checkButton.disabled = false;
     }
 
     function checkAnswer() {
       const userAnswerInput = document.getElementById('answer');
       const userAnswer = parseInt(userAnswerInput.value);
-      const startButton = document.getElementById('startButton');
+      const lang = languageConfig[currentLanguage];
 
       if (isNaN(userAnswer)) {
-        alert('请输入有效的数字。');
+        showNotification(lang.invalidInput);
         return;
       }
 
       if (userAnswer === config.currentAnswer) {
-        config.score += 20;
-        document.getElementById('score').textContent = `Score: ${config.score}`;
-        if (config.score >= config.targetScore) {
-          alert(`恭喜！你达到 ${config.targetScore} 分，游戏胜利！`);
+        lightLevel++;
+        updateTunnel();
+        const message = lightLevel < 5 
+          ? `${lang.correctMessages[Math.min(lightLevel - 1, 4)]}\n${lang.continue}` 
+          : lang.correctMessages[4];
+        const duration = lightLevel < 5 ? 8000 : 10000; // 答对全部问题显示 10 秒，其他 8 秒
+        showNotification(message, duration);
+        if (lightLevel >= config.targetScore) {
           endGame();
         } else {
-          alert('正确！');
-          startButton.disabled = false;
-          startGame();
+          userAnswerInput.disabled = true;
+          checkButton.disabled = true;
+          nextButton.disabled = false;
         }
       } else {
         config.attempts++;
         if (config.attempts < config.maxAttempts) {
-          alert(`再试一次 (${config.attempts}/${config.maxAttempts})`);
+          showNotification(`${lang.tryAgain} (${config.attempts}/${config.maxAttempts} ${lang.attempts})`);
           userAnswerInput.value = '';
         } else {
           config.totalErrors++;
           if (config.totalErrors >= config.maxErrors) {
-            alert(`游戏结束！你累计错误 ${config.maxErrors} 次，失败了。最终分数：${config.score}`);
+            showNotification(`${lang.gameOver} ${config.maxErrors} ${lang.errors}`);
             endGame();
           } else {
-            alert(`已用完所有尝试次数，错误次数：${config.totalErrors}/${config.maxErrors}，重新开始游戏`);
-            startButton.disabled = false;
-            startGame();
+            const remainingAttempts = config.maxErrors - config.totalErrors;
+            showNotification(currentLanguage === 'en' 
+              ? `Missed it again? Try the next one! Only ${remainingAttempts} ${lang.attempts}`
+              : `又数错啦？试试下一题吧！还剩 ${remainingAttempts} ${lang.attempts}`);
+            userAnswerInput.disabled = true;
+            checkButton.disabled = true;
+            nextButton.disabled = false;
           }
         }
       }
     }
 
     function playQuestionAudio() {
-      const randomQuestionAudio = config.questionAudios[Math.floor(Math.random() * config.questionAudios.length)];
+      const audioArray = currentLanguage === 'en' ? config.questionAudiosEn : config.questionAudiosZh;
+      const randomQuestionAudio = audioArray[Math.floor(Math.random() * audioArray.length)];
       console.log('尝试加载问题音频:', randomQuestionAudio.audio);
 
-      // 设置问题音频的 src
       questionAudioPlayer.src = randomQuestionAudio.audio;
       config.currentAnswer = randomQuestionAudio.answer;
 
-      // 移除之前的监听器，避免重复绑定
       questionAudioPlayer.removeEventListener('canplay', playQuestionAudioHandler);
       questionAudioPlayer.removeEventListener('error', handleAudioError);
 
-      // 添加监听器，等待音频可播放
       questionAudioPlayer.addEventListener('canplay', playQuestionAudioHandler, { once: true });
       questionAudioPlayer.addEventListener('error', handleAudioError);
 
-      // 手动触发加载
       questionAudioPlayer.load();
     }
 
@@ -195,13 +648,7 @@
     }
 
     function handleAudioError(e) {
-      console.error('问题音频加载错误:', questionAudioPlayer.src);
-      if (e.target.error) {
-        console.error('错误代码:', e.target.error.code);
-        console.error('错误消息:', e.target.error.message);
-      } else {
-        console.error('未知错误:', e);
-      }
+      console.error('问题音频加载错误:', questionAudioPlayer.src, e);
     }
 
     function handleBackgroundAudioError(e) {
@@ -210,28 +657,36 @@
 
     function endGame() {
       document.getElementById('answer').disabled = true;
-      document.getElementById('checkButton').disabled = true;
-      const startButton = document.getElementById('startButton');
-      startButton.textContent = '重新开始';
+      checkButton.disabled = true;
+      startButton.textContent = languageConfig[currentLanguage].restart;
+      startButton.style.display = 'block';
       startButton.disabled = false;
       startButton.onclick = resetGame;
+      nextButton.disabled = true;
+
+      showEndgamePrompt(currentLanguage === 'en'
+        ? "Thanks for playing! Share this fun game with your friends!"
+        : "感谢游玩！快把这个有趣的游戏分享给朋友吧！");
     }
 
     function resetGame() {
+      endgamePrompt.classList.remove('show'); // 确保结束提示被隐藏
       config.score = 0;
       config.totalErrors = 0;
       config.attempts = 0;
       config.currentAnswer = null;
+      lightLevel = 0;
+      updateTunnel();
+      document.body.style.backgroundColor = '#1a1a1a';
+      tunnelElement.style.display = 'block';
 
-      document.getElementById('score').textContent = 'Score: 0';
       document.getElementById('answer').value = '';
       document.getElementById('answer').disabled = true;
-      document.getElementById('checkButton').disabled = true;
-
-      const startButton = document.getElementById('startButton');
-      startButton.textContent = 'Start';
+      checkButton.style.display = 'none';
       startButton.disabled = false;
-      startButton.onclick = startGame;
+      nextButton.style.display = 'none';
+      instruction.style.display = 'block';
+      document.querySelector('.answer-container').style.display = 'none';
 
       backgroundAudioPlayer.pause();
       backgroundAudioPlayer.currentTime = 0;
@@ -242,6 +697,20 @@
 
       startGame();
     }
+
+    document.addEventListener('keydown', function(event) {
+      if (event.altKey && event.key === '1') {
+        lightLevel = (lightLevel + 1) % 6;
+        updateTunnel();
+      } else if (event.altKey && event.key === '2') {
+        triggerThoughtText();
+      }
+    });
+
+    nextButton.addEventListener('click', function() {
+      this.disabled = true;
+      startGame();
+    });
   </script>
 </body>
 </html>
