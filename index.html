@@ -35,7 +35,7 @@
       perspective: 500px;
       opacity: 1;
       pointer-events: none;
-      z-index: -1;
+      z-index: -1; /* 确保在背景层 */
     }
     #tunnel .tunnel-line {
       position: absolute;
@@ -120,7 +120,7 @@
     }
     .notification {
       position: fixed;
-      top: 20%; /* 答对/答错提示位置 */
+      top: 20%;
       left: 50%;
       transform: translateX(-50%);
       background: rgba(0, 0, 0, 0.8);
@@ -145,8 +145,8 @@
       font-size: 16px;
     }
     #thought-text {
-      position: fixed; /* 改为 fixed，避免与通知重叠 */
-      top: 40%; /* 逗趣文案位置，低于通知 */
+      position: fixed;
+      top: 40%;
       left: 50%;
       transform: translateX(-50%);
       color: #ffffff;
@@ -207,9 +207,9 @@
     }
     #share-prompt, #endgame-prompt {
       position: fixed;
-      top: 50%; /* 感谢与分享提示居中 */
+      top: 50%;
       left: 50%;
-      transform: translate(-50%, -50%); /* 完全居中 */
+      transform: translate(-50%, -50%);
       color: #ffffff;
       font-size: 16px;
       text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
@@ -248,7 +248,7 @@
     @media (max-width: 768px) {
       .answer-container {
         flex-direction: column;
-        bottom: 20vh; /* 更靠中部 */
+        bottom: 20vh;
       }
       .input-hint {
         font-size: 12px;
@@ -264,18 +264,22 @@
         padding: 6px 0;
         font-size: 12px;
       }
+      #tunnel {
+        max-width: 480px; /* 限制最大尺寸 */
+        max-height: 480px;
+      }
       #notification {
-        top: 30%; /* 答对/答错提示 */
+        top: 30%;
         font-size: 9px;
         padding: 5px 10px;
       }
       #thought-text {
-        top: 50%; /* 逗趣文案，低于通知 */
+        top: 50%;
         font-size: 8px;
         padding: 5px 10px;
       }
       #share-prompt, #endgame-prompt {
-        top: 50%; /* 感谢与分享提示居中 */
+        top: 50%;
         transform: translate(-50%, -50%);
         font-size: 9px;
         padding: 5px 10px;
@@ -298,7 +302,7 @@
         bottom: 10vh;
         left: 50%;
         transform: translateX(-50%);
-        width: auto; /* 避免过宽 */
+        width: auto;
       }
       .input-hint {
         font-size: 16px;
@@ -314,18 +318,22 @@
         padding: 12px 0;
         font-size: 16px;
       }
+      #tunnel {
+        max-width: 960px; /* 电脑端保持原最大尺寸 */
+        max-height: 960px;
+      }
       #notification {
-        top: 20%; /* 答对/答错提示 */
+        top: 20%;
         font-size: 16px;
         padding: 10px 20px;
       }
       #thought-text {
-        top: 40%; /* 逗趣文案，低于通知 */
+        top: 40%;
         font-size: 16px;
         padding: 10px 20px;
       }
       #share-prompt, #endgame-prompt {
-        top: 50%; /* 感谢与分享提示居中 */
+        top: 50%;
         transform: translate(-50%, -50%);
         font-size: 16px;
         padding: 10px 20px;
@@ -543,7 +551,7 @@
         thoughtText.textContent = randomText;
       }
 
-      thoughtText.style.top = '40%'; // 固定位置，避免随机重叠
+      thoughtText.style.top = '40%';
       thoughtText.style.left = '50%';
       thoughtText.style.transform = 'translateX(-50%)';
 
@@ -592,7 +600,7 @@
 
     function updateTunnel() {
       const maxLevel = 5;
-      const sizes = [40, 60, 120, 240, 480, 960];
+      const sizes = window.innerWidth <= 768 ? [40, 80, 120, 240, 360, 480] : [40, 60, 120, 240, 480, 960]; // 手机端限制最大尺寸
       const size = sizes[lightLevel];
       
       tunnelElement.style.width = `${size}px`;
