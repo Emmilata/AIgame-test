@@ -225,8 +225,22 @@
       opacity: 1;
       animation: fadeInOut 3s cubic-bezier(0.4, 0, 0.2, 1), float 3s ease-in-out infinite;
     }
+    #tap-to-answer {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+      text-align: center;
+      font-size: 24px;
+      line-height: 100vh;
+      z-index: 1000;
+    }
     @media (max-width: 768px) {
-      #thought-text, #share-prompt, #endgame-prompt {
+      #thought-text, #share-prompt, #endgame-prompt, #tap-to-answer {
         font-size: 16px;
         width: 80%;
         text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
@@ -270,7 +284,7 @@
     <div id="thought-text"></div>
     <div id="question"></div>
     <audio id="backgroundAudio" style="display:none;"></audio>
-    <audio id="questionAudio" onended="enableCheckButton()"></audio>
+    <audio id="questionAudio"></audio>
     <div id="game-instruction">听声音猜数目，破解 5 道谜题解开真相吧！</div>
     <div class="answer-container">
       <span class="input-hint" id="input-hint"></span>
@@ -288,6 +302,7 @@
   <div id="notification" class="notification"></div>
   <div id="share-prompt"></div>
   <div id="endgame-prompt"></div>
+  <div id="tap-to-answer">点击以输入答案</div>
 
   <script>
     let currentLanguage = 'en';
@@ -440,7 +455,7 @@
       notification.classList.add('show');
       setTimeout(() => {
         notification.classList.remove('show');
-      }, duration); // 默认 8 秒，可自定义
+      }, duration);
     }
 
     function triggerThoughtText() {
@@ -531,6 +546,7 @@
       nextButton.style.display = 'block';
       nextButton.disabled = true;
       instruction.style.display = 'none';
+      document.getElementById('tap-to-answer').style.display = 'none';
       document.querySelector('.answer-container').style.display = 'flex';
 
       backgroundAudioPlayer.pause();
@@ -544,6 +560,7 @@
       questionAudioPlayer.src = '';
       questionAudioPlayer.removeEventListener('canplay', playQuestionAudioHandler);
       questionAudioPlayer.removeEventListener('error', handleAudioError);
+      questionAudioPlayer.removeEventListener('ended', enableCheckButton);
 
       const randomBackgroundSound = config.backgroundSounds[Math.floor(Math.random() * config.backgroundSounds.length)];
       console.log('尝试加载背景音频:', randomBackgroundSound);
@@ -572,9 +589,15 @@
     }
 
     function enableCheckButton() {
-      document.getElementById('answer').disabled = false;
-      checkButton.disabled = false;
+      document.getElementById('tap-to-answer').style.display = 'block';
     }
+
+    document.getElementById('tap-to-answer').addEventListener('click', () => {
+      document.getElementById('tap-to-answer').style.display = 'none';
+      document.getElementById('answer').disabled = false;
+      document.getElementById('answer').focus();
+      checkButton.disabled = false;
+    });
 
     function checkAnswer() {
       const userAnswerInput = document.getElementById('answer');
@@ -592,7 +615,7 @@
         const message = lightLevel < 5 
           ? `${lang.correctMessages[Math.min(lightLevel - 1, 4)]}\n${lang.continue}` 
           : lang.correctMessages[4];
-        const duration = lightLevel < 5 ? 8000 : 10000; // 答对全部问题显示 10 秒，其他 8 秒
+        const duration = lightLevel < 5 ? 8000 : 10000;
         showNotification(message, duration);
         if (lightLevel >= config.targetScore) {
           endGame();
@@ -634,9 +657,11 @@
 
       questionAudioPlayer.removeEventListener('canplay', playQuestionAudioHandler);
       questionAudioPlayer.removeEventListener('error', handleAudioError);
+      questionAudioPlayer.removeEventListener('ended', enableCheckButton);
 
       questionAudioPlayer.addEventListener('canplay', playQuestionAudioHandler, { once: true });
       questionAudioPlayer.addEventListener('error', handleAudioError);
+      questionAudioPlayer.addEventListener('ended', enableCheckButton, { once: true });
 
       questionAudioPlayer.load();
     }
@@ -670,7 +695,8 @@
     }
 
     function resetGame() {
-      endgamePrompt.classList.remove('show'); // 确保结束提示被隐藏
+      endgamePrompt.classList.remove('show');
+      document.getElementById('tap-to-answer').style.display = 'none';
       config.score = 0;
       config.totalErrors = 0;
       config.attempts = 0;
